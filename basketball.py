@@ -35,6 +35,7 @@ class Entity:
     #self.dy = newdy if newdy > 0 else 0
 
 #TODO remove priority hard coded number from init
+#TODO change 'physics' to a pos, velocity, acceleration system to avoid stupidity
 class Ball(Entity):
   def __init__(self,x,y,color,size):
     Entity.__init__(self,x,y,color,1)
@@ -102,7 +103,11 @@ def update_screen():
   #newcolor = tuple(map(lambda x : x + 20, ball.color))
   for entity in entities:
     entity.update()
-
+  newdy = (ball.dy + 1.2)*ball.dy
+  ball.dy = newdy if newdy < 50 else 50
+  if ball.dy >= 10 and ball.y + ball.size >= screen_resolution[1] - 20:
+    ball.y = screen_resolution[1] - ball.size -10
+    ball.dy = 0
   for entity in entities:
     entity.draw()
   #update foreground

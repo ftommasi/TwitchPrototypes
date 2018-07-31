@@ -15,7 +15,7 @@ class Ball(Entity):
     Entity.__init__(self,x,y,color)
     self.size = size
   def draw(self):
-    draw_circle(self.color,self,x,self.y,self.size)
+    draw_circle(self.color,self.x,self.y,self.size)
 
 #TODO tweak with default values for w/h on net
 #TODO net should never be smaller than balls
@@ -25,8 +25,8 @@ class Net(Entity):
     self.width = width
     self.height = height
   def draw(self):
-    draw_line(self.color,(self,x,self.y),(self.x,self.y+height))
-    draw_line(self.color,(self,x+width,self.y),(self.x+width,self.y+height))
+    draw_line(self.color,(self.x,self.y),(self.x,self.y+self.height))
+    draw_line(self.color,(self.x+self.width,self.y),(self.x+self.width,self.y+self.height))
 
 
 
@@ -53,18 +53,19 @@ WHITE  = (255,255,255)
 ball = Ball(0,0,GREEN,40)
 net = Net(10,10,RED)
 
+entities += [ball,net]
 def draw_line(color,first,last,width=1):
   pygame.draw.line(game_display,color,first,last,width)
 
-def draw_circle(color,x,y,rad):
-  pass
-  #pygame.draw.
+def draw_circle(color,x,y,radius):
+  pygame.draw.ellipse(game_display, color,(x,y,x+(2*radius),y+(2*radius)))
 
 def update_screen():
   #update background
   draw_line(WHITE, (0,0),screen_resolution)
   #update entities
-
+  for entity in entities:
+    entity.draw()
   #update foreground
 
   #render to display

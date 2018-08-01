@@ -1,6 +1,7 @@
 import pygame 
 
 #Main colors, these are shortcuts for easy colors
+
 BLACK  = (0  ,0  ,0  )
 RED    = (255,0  ,0  )
 GREEN  = (0  ,255,0  )
@@ -43,10 +44,10 @@ class Ball(Entity):
   def __init__(self,x,y,color,size):
     Entity.__init__(self,x,y,color,1)
     self.size = size
-  
+    self.still_bouncing = True 
   def draw(self):
     draw_circle(self.color,self.x,self.y,self.size)
-
+  
   def update(self,_delta):  
     #delta = _delta #
     delta = 1/10.0 #TODO what is this, we should maybe be passing a delta of time through fns
@@ -56,22 +57,38 @@ class Ball(Entity):
     self.y = self.y + self.yvel
     self.xvel = (self.xaccel + self.xvel) *  delta
     self.yvel = (self.yaccel + self.yvel) *  delta
-
+    self.xaccel -= 0.1 
+    if self.xaccel < 0:
+      self.xaccel = 0
+    if self.still_bouncing:
+      self.yaccel += 0.8 
+    
+    #set movement caps
     self.xvel = min(50,self.xvel)     
     self.yvel = min(50,self.yvel)     
-    #self.xaccel = friction * self.xdirection
-    #self.yaccel = gravity * self.ydirection
+
+    #scale down accel vectors on collisions
     if self.x + self.size >= screen_resolution[0] or self.x <= 0:
       self.xaccel *= -1
-      self.x += self.xaccel
+      self.x += self.xaccel * 0.1
     if self.y <= 0 or (self.y + self.size) >= screen_resolution[1]:
       self.yaccel *= -1
-      self.y += self.yaccel
-
-    print "x: {}  y: {}".format(self.x,self.y)
-    print "xvel: {}  yvel: {}".format(self.xvel,self.yvel)
-    print "xaccell: {}  yaccel: {}".format(self.xaccel,self.yaccel)
-    print "xdirecton: {}  ydirection: {}".format(self.xdirection,self.ydirection)
+      self.y += self.yaccel * 0.25
+      #self.yaccel = (((self.yaccel) - (0.1 * ((-1 * self.yaccel)/self.yaccel))) * 0.8) 
+      print "~~checking for deactivation {}({})".format(self.yaccel,abs(self.yaccel))
+      if abs(self.yaccel) < 13.75:
+        print "---DEACTIVATING---"
+        self.yaccel = 0
+        self.yvel = 0
+        self.still_bouncing = False
+      else:
+        self.yaccel = (((self.yaccel) - (0.1 * ((-1 * self.yaccel)/self.yaccel))) * 0.8) 
+      def debug_print():
+        print "x: {}  y: {}".format(self.x,self.y)
+        print "xvel: {}  yvel: {}".format(self.xvel,self.yvel)
+        print "xaccell: {}  yaccel: {} ({})".format(self.xaccel,self.yaccel,abs(self.yaccel))
+        #print "xdirecton: {}  ydirection: {}".format(self.xdirection,self.ydirection)
+      debug_print()
 
 #TODO tweak with default values for w/h on net
 #TODO net should never be smaller than balls
@@ -104,7 +121,7 @@ net = Net(10,10,BLUE)
 entities += [ball,net]
 
 ball.xaccel = 15
-ball.yaccel = -20
+ball.yaccel = 50
 def draw_line(color,first,last,width=1):
   pygame.draw.line(game_display,color,first,last,width)
 

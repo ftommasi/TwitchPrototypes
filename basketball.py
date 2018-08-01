@@ -57,8 +57,13 @@ class Ball(Entity):
     self.y = self.y + self.yvel
     self.xvel = (self.xaccel + self.xvel) *  delta
     self.yvel = (self.yaccel + self.yvel) *  delta
-    self.xaccel -= 0.1 
     if self.xaccel < 0:
+      self.xaccel += 0.03  
+    else:
+      self.xaccel -=0.03
+
+
+    if abs(self.xaccel) < 0.2:
       self.xaccel = 0
     if self.still_bouncing:
       self.yaccel += 0.8 
@@ -70,14 +75,15 @@ class Ball(Entity):
     #scale down accel vectors on collisions
     if self.x + self.size >= screen_resolution[0] or self.x <= 0:
       self.xaccel *= -1
-      self.x += self.xaccel * 0.1
+      self.x += self.xaccel * 0.25
+      self.xaccel = (((self.xaccel) - (((-1 * self.xaccel)/self.xaccel))) * 0.8) 
     if self.y <= 0 or (self.y + self.size) >= screen_resolution[1]:
       self.yaccel *= -1
       self.y += self.yaccel * 0.25
       #self.yaccel = (((self.yaccel) - (0.1 * ((-1 * self.yaccel)/self.yaccel))) * 0.8) 
-      print "~~checking for deactivation {}({})".format(self.yaccel,abs(self.yaccel))
+      #print "~~checking for deactivation {}({})".format(self.yaccel,abs(self.yaccel))
       if abs(self.yaccel) < 13.75:
-        print "---DEACTIVATING---"
+        #print "---DEACTIVATING---"
         self.yaccel = 0
         self.yvel = 0
         self.still_bouncing = False
@@ -88,7 +94,7 @@ class Ball(Entity):
         print "xvel: {}  yvel: {}".format(self.xvel,self.yvel)
         print "xaccell: {}  yaccel: {} ({})".format(self.xaccel,self.yaccel,abs(self.yaccel))
         #print "xdirecton: {}  ydirection: {}".format(self.xdirection,self.ydirection)
-      debug_print()
+      #debug_print()
 
 #TODO tweak with default values for w/h on net
 #TODO net should never be smaller than balls
@@ -120,7 +126,7 @@ net = Net(10,10,BLUE)
 
 entities += [ball,net]
 
-ball.xaccel = 15
+ball.xaccel = 85
 ball.yaccel = 50
 def draw_line(color,first,last,width=1):
   pygame.draw.line(game_display,color,first,last,width)

@@ -54,21 +54,25 @@ class Ball(Entity):
     gravity = 1.4
     self.x = self.x + self.xvel
     self.y = self.y + self.yvel
-    self.xvel = (self.xaccel + self.xvel) * self.xdirection
-    self.yvel = (self.yaccel + self.yvel) * self.ydirection 
+    self.xvel = (self.xaccel + self.xvel) *  delta
+    self.yvel = (self.yaccel + self.yvel) *  delta
 
     self.xvel = min(50,self.xvel)     
     self.yvel = min(50,self.yvel)     
     #self.xaccel = friction * self.xdirection
     #self.yaccel = gravity * self.ydirection
     if self.x + self.size >= screen_resolution[0] or self.x <= 0:
-      self.xdirection *= -1
-    if self.y <= 0 or self.y + self.size >= screen_resolution[1]:
-      self.ydirection *= -1
+      self.xaccel *= -1
+      self.x += self.xaccel
+    if self.y <= 0 or (self.y + self.size) >= screen_resolution[1]:
+      self.yaccel *= -1
+      self.y += self.yaccel
+
     print "x: {}  y: {}".format(self.x,self.y)
     print "xvel: {}  yvel: {}".format(self.xvel,self.yvel)
     print "xaccell: {}  yaccel: {}".format(self.xaccel,self.yaccel)
-  
+    print "xdirecton: {}  ydirection: {}".format(self.xdirection,self.ydirection)
+
 #TODO tweak with default values for w/h on net
 #TODO net should never be smaller than balls
 #TODO remove priority hard coded number from init
@@ -99,8 +103,8 @@ net = Net(10,10,BLUE)
 
 entities += [ball,net]
 
-ball.xaccel = 0
-ball.yaccel = -10
+ball.xaccel = 15
+ball.yaccel = -20
 def draw_line(color,first,last,width=1):
   pygame.draw.line(game_display,color,first,last,width)
 

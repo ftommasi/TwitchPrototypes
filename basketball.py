@@ -15,24 +15,27 @@ WHITE  = (255,255,255)
 #TODO this only works as a struct. Probably should add vector based movement 
 #        (should it be internal to entities or should there be an exernal class)
 #TODO add support for sprite/texture mapping
+#NOTE Physics formulae:
+#       vel = dx/dt = (x2-x1)/(t2-t1) // v = a*t + v_0
+#       accel = dv/dt = (v2-v1)/(t2-t1)
+
 class Entity:
   def __init__(self,x,y,color,priority):
     self.x = x
     self.y = y
-    #entities are stationary by default
-    self.dx = 0
-    self.dy = 0
+    self.pos = (self.x,self.y)
+    self.xvel = 0 
+    self.yvel = 0
+    self.xaccel = 0
+    self.yaccel = 0
+    self.xdirection = 1
+    self.ydirection = -1
     self.color = color
 
-  def update(self):
-    self.x += self.dx
-    self.y += self.dy
-    
-    
-    #newdx = self.dx - 1
-    #newdy = self.dy - 1
-    #self.dx = newdx if newdx > 0 else 0
-    #self.dy = newdy if newdy > 0 else 0
+  def update(self,delta):
+    pass
+
+
 
 #TODO remove priority hard coded number from init
 #TODO change 'physics' to a pos, velocity, acceleration system to avoid stupidity
@@ -40,15 +43,32 @@ class Ball(Entity):
   def __init__(self,x,y,color,size):
     Entity.__init__(self,x,y,color,1)
     self.size = size
+  
   def draw(self):
     draw_circle(self.color,self.x,self.y,self.size)
-  def update(self):
-    Entity.update(self)
-    if self.x + self.size >= screen_resolution[0] or self.x <= 0:
-      self.dx *= -1
-    if self.y <= 0 or self.y + self.size >= screen_resolution[1]:
-      self.dy *= -1
 
+  def update(self,_delta):  
+    #delta = _delta #
+    delta = 1/10.0 #TODO what is this, we should maybe be passing a delta of time through fns
+    friction = -0.3 #TODO how fast should acceleration bleed by
+    gravity = 1.4
+    self.x = self.x + self.xvel
+    self.y = self.y + self.yvel
+    self.xvel = (self.xaccel + self.xvel) * self.xdirection
+    self.yvel = (self.yaccel + self.yvel) * self.ydirection 
+
+    self.xvel = min(50,self.xvel)     
+    self.yvel = min(50,self.yvel)     
+    #self.xaccel = friction * self.xdirection
+    #self.yaccel = gravity * self.ydirection
+    if self.x + self.size >= screen_resolution[0] or self.x <= 0:
+      self.xdirection *= -1
+    if self.y <= 0 or self.y + self.size >= screen_resolution[1]:
+      self.ydirection *= -1
+    print "x: {}  y: {}".format(self.x,self.y)
+    print "xvel: {}  yvel: {}".format(self.xvel,self.yvel)
+    print "xaccell: {}  yaccel: {}".format(self.xaccel,self.yaccel)
+  
 #TODO tweak with default values for w/h on net
 #TODO net should never be smaller than balls
 #TODO remove priority hard coded number from init
@@ -74,13 +94,13 @@ entities = []
 
 
 #entities 
-ball = Ball(0,0,GREEN,40)
+ball = Ball(50,50,GREEN,40)
 net = Net(10,10,BLUE)
 
 entities += [ball,net]
 
-ball.dx = 10
-ball.dy = 10
+ball.xaccel = 0
+ball.yaccel = -10
 def draw_line(color,first,last,width=1):
   pygame.draw.line(game_display,color,first,last,width)
 
@@ -94,7 +114,7 @@ def draw_circle(color,x,y,radius):
 
 
 event_count = 0
-def update_screen():
+def update_screen(delta):
   #update background
   #we draw this background every time because if not we get the [[[[[[[[[[[] overlap effect
   pygame.draw.rect(game_display,WHITE,(0,0,screen_resolution[0],screen_resolution[1]))
@@ -102,12 +122,12 @@ def update_screen():
   #we do two for loops like this 
   #newcolor = tuple(map(lambda x : x + 20, ball.color))
   for entity in entities:
-    entity.update()
-  newdy = (ball.dy + 1.2)*ball.dy
-  ball.dy = newdy if newdy < 50 else 50
-  if ball.dy >= 10 and ball.y + ball.size >= screen_resolution[1] - 20:
-    ball.y = screen_resolution[1] - ball.size -10
-    ball.dy = 0
+    entity.update(delta)
+  #newdy = (ball.dy + 1.2)*ball.dy
+  #ball.yaccel = newdy if newdy < 50 else 50
+  #if ball.dy >= 10 and ball.y + ball.size >= screen_resolution[1] - 20:
+  #  ball.y = screen_resolution[1] - ball.size -10
+  #  ball.dy = 0
   for entity in entities:
     entity.draw()
   #update foreground
@@ -117,6 +137,7 @@ def update_screen():
 
 running = True
 while running:
+  time = pygame.time.Clock().get_rawtime()
   for event in pygame.event.get():
     if event.type is pygame.QUIT:
       running = False
@@ -124,6 +145,6 @@ while running:
       if event.key == pygame.K_RIGHT:
         running = False
     #print event
-  update_screen()
+  update_screen(pygame.time.Clock().get_rawtime() - time)
   clock.tick(60)
 pygame.quit()

@@ -45,16 +45,27 @@ class Ball(Entity):
     Entity.__init__(self,x,y,color,1)
     self.size = size
     self.still_bouncing = True 
+    self.center_x = self.x + size/2
+    self.center_y = self.y + size/2
+
   def draw(self):
     draw_circle(self.color,self.x,self.y,self.size)
-  
+ 
+ #should these updates be += or just = and do the addition outside the function??
+  def update_x(self,newx):
+    self.x += newx
+    self.center_x = self.x + self.size/2
+  def update_y(self,newy):
+    self.y += newy
+    self.center_y = self.y + self.size/2
+ 
   def update(self,_delta):  
     #delta = _delta #
     delta = 1/10.0 #TODO what is this, we should maybe be passing a delta of time through fns
     friction = -0.3 #TODO how fast should acceleration bleed by
     gravity = 1.4
-    self.x = self.x + self.xvel
-    self.y = self.y + self.yvel
+    self.update_x(self.xvel)
+    self.update_y(self.yvel)
     self.xvel = (self.xaccel + self.xvel) *  delta
     self.yvel = (self.yaccel + self.yvel) *  delta
     if self.xaccel < 0:
@@ -75,11 +86,11 @@ class Ball(Entity):
     #scale down accel vectors on collisions
     if self.x + self.size >= screen_resolution[0] or self.x <= 0:
       self.xaccel *= -1
-      self.x += self.xaccel * 0.25
+      self.update_x(self.xaccel * 0.25)
       self.xaccel = (((self.xaccel) - (((-1 * self.xaccel)/self.xaccel))) * 0.8) 
     if self.y <= 0 or (self.y + self.size) >= screen_resolution[1]:
       self.yaccel *= -1
-      self.y += self.yaccel * 0.25
+      self.update_y(self.yaccel * 0.25)
       #self.yaccel = (((self.yaccel) - (0.1 * ((-1 * self.yaccel)/self.yaccel))) * 0.8) 
       #print "~~checking for deactivation {}({})".format(self.yaccel,abs(self.yaccel))
       if abs(self.yaccel) < 13.75:

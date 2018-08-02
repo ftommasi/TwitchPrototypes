@@ -1,4 +1,5 @@
 import pygame 
+import math
 
 #Main colors, these are shortcuts for easy colors
 
@@ -13,8 +14,6 @@ WHITE  = (255,255,255)
 
 
 #TODO this probably isnt robust/general enough
-#TODO this only works as a struct. Probably should add vector based movement 
-#        (should it be internal to entities or should there be an exernal class)
 #TODO add support for sprite/texture mapping
 #NOTE Physics formulae:
 #       vel = dx/dt = (x2-x1)/(t2-t1) // v = a*t + v_0
@@ -50,8 +49,9 @@ class Ball(Entity):
 
   def draw(self):
     draw_circle(self.color,self.x,self.y,self.size)
+    draw_circle(RED,self.center_x,self.center_y,5)
  
- #should these updates be += or just = and do the addition outside the function??
+ #TODO should these updates be += or just = and do the addition outside the function??
   def update_x(self,newx):
     self.x += newx
     self.center_x = self.x + self.size/2
@@ -107,6 +107,15 @@ class Ball(Entity):
         #print "xdirecton: {}  ydirection: {}".format(self.xdirection,self.ydirection)
       #debug_print()
 
+
+    #NOTE optimize by squaring both sides instead of sqrt    
+    def is_point_colliding(self,point):
+      if point[0]**2 <= (abs(self.size-((self.center_y + self.size) ** 2))) and point[1] <= sqrt(abs(self.size-((self.center_x + self.size) ** 2)))**2 :
+        return True
+      return False
+
+
+
 #TODO tweak with default values for w/h on net
 #TODO net should never be smaller than balls
 #TODO remove priority hard coded number from init
@@ -116,9 +125,14 @@ class Net(Entity):
     self.width = width
     self.height = height
   def draw(self):
-    draw_line(self.color,(self.x,self.y),(self.x,self.y+self.height),20)
-    draw_line(self.color,(self.x+self.width,self.y),(self.x+self.width,self.y+self.height),20)
+    draw_line(self.color,(self.x,self.y),(self.x,self.y+self.height),5)
+    draw_line(self.color,(self.x+self.width,self.y),(self.x+self.width,self.y+self.height),5)
+    draw_line(self.color,(self.x,self.y+self.height),(self.x+self.width,self.y+self.height),5)
 
+  def is_point_colliding(self,point):
+    pass
+    if ((point[0] > self.x and point[0] < self.x + 5) or (point[0] > self.width and point[0] < self.width + 5)) and ((point[1] > self.y and point[1] < self.height) or (point[1] < self.height+5 and point[1] > self.height)):
+      pass
 
 
 pygame.init()
@@ -133,7 +147,7 @@ entities = []
 
 #entities 
 ball = Ball(50,50,GREEN,40)
-net = Net(10,10,BLUE)
+net = Net(400,250,BLUE)
 
 entities += [ball,net]
 
@@ -149,27 +163,58 @@ def draw_line(color,first,last,width=1):
 #       makes the object grow as its position changes
 def draw_circle(color,x,y,radius):
   pygame.draw.ellipse(game_display, color,(x,y,radius,radius))
+  
 
+def calculate_distance(point1,point2):
+  return math.sqrt(abs((point2[0]-point1[0]) + (point2[1] - point1[1])))
+
+
+#NOTE potentialoptimization would be to divide the screen region
+#   into 4 quadrants and only check the entities in each quadrannt. 
+#   This divide and conquer would decrease the number of dumb collision checks
+def update_collisions(entities,screen_region):
+  for entity1 in entities:
+    for entity2 in entities:
+      if entity1 is entity2:
+        continue
+    #if calculate_distance((entity1.center_x,entity1.center_y),)
+    pass
+
+#def in_circle
 
 event_count = 0
 def update_screen(delta):
   #update background
-  #we draw this background every time because if not we get the [[[[[[[[[[[] overlap effect
+  #NOTE: we draw this background every time because if not we get the [[[[[[] overlap effect
   pygame.draw.rect(game_display,WHITE,(0,0,screen_resolution[0],screen_resolution[1]))
   #update entities
   #we do two for loops like this 
   #newcolor = tuple(map(lambda x : x + 20, ball.color))
   for entity in entities:
     entity.update(delta)
-  #newdy = (ball.dy + 1.2)*ball.dy
-  #ball.yaccel = newdy if newdy < 50 else 50
-  #if ball.dy >= 10 and ball.y + ball.size >= screen_resolution[1] - 20:
-  #  ball.y = screen_resolution[1] - ball.size -10
-  #  ball.dy = 0
+  
+  #update_collisions(entities,screen_resolution)
+  
+  #check if ball is colliding with basket. This will need to be refactored into something less crappy
+  #if ((ball.size**2 <= abs(net.y-ball.center_y)**2 + abs(net.x-ball.center_x)**2)): 
+  #and (net.width **2 <= net.height **2 + ball.size **2) ): 
+  #and ((net.y **2 <= net.x**2 + ball.size**2) or (net.height **2 <= net.width **2 + ball.size **2) ):
+    #collision detected/ do something
+    
+  if ((ball.center_y < (net.height+net.y) and ball.center_y > net.y)) and (net.x < ball.center_x + ball.size):
+  #and ((ball.size ** 2< abs(net.x - ball.center_x)** 2) + (abs(net.y-ball.center_y) **  2 )):
+  
+  #(ball.center_x < (net.x + net.width) and (ball.center_x > net.x)):
+    #HACK temp direction switch to verify other code
+    print "~~net collision~~ at Ball ({},{}) with net(x:{} - w:{}, y: {} - h: {})".format(ball.center_x,ball.center_y,net.x,net.x+net.width,net.y,net.y+net.height)
+    ball.xaccel *= 0
+    ball.yaccel *= 0
+
   for entity in entities:
     entity.draw()
   #update foreground
-
+  ball_center = (ball.center_x, ball.center_y)
+  #if calculate_distance(ball_center)
   #render to display
   pygame.display.flip()
 

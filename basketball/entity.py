@@ -3,7 +3,7 @@ import pygame
 #TODO this probably needs to be more robust/generic
 #TODO add support for sprite and texture mapping
 #TODO implement more robust physics library
-class Entity:
+class entity:
   def _init__ (self,x,y,color,priority,game_display):
     self.x = x
     self.y = y

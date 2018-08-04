@@ -1,10 +1,9 @@
 import pygame
-import entity.py
-
-class Net(Entity):
+from entity import *
+class Net(entity):
   def __init__(self,x,y,color,width=20,height=20):
     #TODO MAGIC NUMBER
-    Entity.__init__(self,x,y,color,0)
+    entity.__init__(self,x,y,color,0)
     self.width = width
     self.height = height
 

@@ -1,8 +1,7 @@
 import pygame 
 import math
-import ball.py
-import net.py
-
+from ball import *
+from net import *
 #Main colors, these are shortcuts for easy colors
 
 BLACK  = (0  ,0  ,0  )
@@ -27,10 +26,10 @@ entities = []
 mode = {}
 
 #entities 
-mode["left"] = Ball(170,300,GREEN,40)
-mode["right"] = Ball(530,300,YELLOW,40)
-mode["top"] = Ball(330,150,BLACK,40)
-mode["bot"] =  Ball(330,350,(125,255,70),40)
+mode["left"] = Ball(170,300,GREEN,40,game_display)
+mode["right"] = Ball(530,300,YELLOW,40,game_display)
+mode["top"] = Ball(330,150,BLACK,40,game_display)
+mode["bot"] =  Ball(330,350,(125,255,70),40,game_display)
 net = Net(300,300,BLUE,100)
 
 mode["left"].xaccel = 70

@@ -1,19 +1,19 @@
 #Fausto Tommasi 2018
 
 import pygame
-import entity.py
+from entity import *
 
 #NOTE (... self.size)/2 is not a magic number it is by definition
 #TODO maybe add an alias to self.size/2
-class Ball(Entity):
-  def __init__(self,x,y,color,size):
+class Ball(entity):
+  def __init__(self,x,y,color,size,game_display):
     #TODO MAGIC NUMBER
-    Entity.__init__(self,x,y,color,1)
+    entity.__init__(self,x,y,color,1,game_display)
     #NOTE this is diameter not radius. It should also be renamed
     self.size = size 
     self.still_bouncing = True # do we even need this anymore?
-    self.center_x = /(self.x + self.size)/2
-    self.center_y = /(self.y + self.size)/2
+    self.center_x = (self.x + self.size)/2
+    self.center_y = (self.y + self.size)/2
   
   def draw(self):
     pygame.draw.ellipse(self.game_display,self.color,(self.x,self.y,self.size,self.size))
@@ -88,10 +88,4 @@ class Ball(Entity):
       else:
         #TODO MAGIC NUMBER
         self.yaccel = (((self.yaccel) - (0.1 * ((-1 * self.yaccel)/self.yaccel))) * 0.8)
-        '
-
-
-
-
-
 
